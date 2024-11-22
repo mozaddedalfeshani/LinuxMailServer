@@ -1,35 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [formData, setFormData] = useState({
+    to: "",
+    subject: "",
+    message: "",
+  });
+
+  const [responseMessage, setResponseMessage] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  // Handle form input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post("http://localhost:5000/send", formData);
+      setResponseMessage(response.data.message);
+      setPreviewUrl(response.data.previewUrl); // Get Ethereal preview URL
+    } catch (error) {
+      setResponseMessage("Failed to send email. Please try again.");
+      console.error(error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1 className="bg-green-50">Email Sender</h1>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <input
+          type="email"
+          name="to"
+          placeholder="Recipient Email"
+          value={formData.to}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="text"
+          name="subject"
+          placeholder="Subject"
+          value={formData.subject}
+          onChange={handleChange}
+          required
+        />
+        <textarea
+          name="message"
+          placeholder="Your message"
+          value={formData.message}
+          onChange={handleChange}
+          rows="4"
+          required></textarea>
+        <button
+          type="submit"
+          style={{ padding: "10px 20px", cursor: "pointer" }}>
+          Send Email
         </button>
+      </form>
+
+      {responseMessage && <p>{responseMessage}</p>}
+
+      {previewUrl && (
         <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+          Preview your email{" "}
+          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+            here
+          </a>
+          .
         </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
