@@ -2,7 +2,7 @@
 
 A full-stack application that allows users to send and receive emails seamlessly. Built with **React.js** (frontend), **Node.js** (backend), and powered by **Linux** for server configuration and deployment.
 
-## Features 🌟
+## Features 🌟 comming soon
 
 - **User Authentication**: Secure login and registration system.
 - **Compose Emails**: Send emails using an SMTP server.
