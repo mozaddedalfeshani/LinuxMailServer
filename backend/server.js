@@ -1,50 +1,35 @@
 const express = require("express");
-const nodemailer = require("nodemailer");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const { exec } = require("child_process");
 
 const app = express();
-const PORT = 5000;
-
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Nodemailer transporter configuration for Ethereal
-const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email",
-  port: 587,
-  auth: {
-    user: "allen66@ethereal.email", // Replace with your Ethereal email
-    pass: "8mFWpZRKn7qSDtYc9c", // Replace with your Ethereal password
-  },
-});
+// Endpoint to send email
+app.post("/send-email", (req, res) => {
+  const { to, subject, body } = req.body;
+  console.log(to,subject)
 
-// Email API endpoint
-app.post("/send", async (req, res) => {
-  const { to, subject, message } = req.body;
-
-  try {
-    const mailOptions = {
-      from: '"Test Server" <allen66@ethereal.email>', // Sender address
-      to, // Recipient address
-      subject, // Email subject
-      text: message, // Plain text body
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-
-    res.status(200).json({
-      success: true,
-      message: "Email sent successfully!",
-      previewUrl: nodemailer.getTestMessageUrl(info), // Preview URL
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+  if (!to || !subject || !body) {
+    return res.status(400).send("All fields are required.");
   }
+
+  // Construct the mail command
+  const command = `echo "${body}" | mail -s "${subject}" ${to}`;
+
+  // Execute the command
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${stderr}`);
+      return res.status(500).send("Failed to send email.");
+    }
+    res.send("Email sent successfully.");
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Start the server
+app.listen(5000, () => {
+  console.log("Server running on http://localhost:5000");
 });
